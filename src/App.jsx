@@ -1,22 +1,24 @@
 import { useState } from "react";
 import axios from "axios";
 
+// Weather descriptions
 function describeWeather(code) {
   if (code === 0) return "Clear sky";
-  if ([1,2].includes(code)) return "Partly cloudy";
+  if ([1, 2].includes(code)) return "Partly cloudy";
   if (code === 3) return "Overcast";
-  if ([45,48].includes(code)) return "Fog";
+  if ([45, 48].includes(code)) return "Fog";
   if ([51,53,55,61,63,65,80,81,82].includes(code)) return "Rain";
   if ([71,73,75,85,86].includes(code)) return "Snow";
   if ([95,96,99].includes(code)) return "Thunderstorm";
   return "Unknown";
 }
 
+// Weather icons
 function iconForCode(code) {
   if (code === 0) return "https://img.icons8.com/ios-filled/100/ffffff/sun--v1.png";
-  if ([1,2].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/partly-cloudy-day.png";
+  if ([1, 2].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/partly-cloudy-day.png";
   if (code === 3) return "https://img.icons8.com/ios-filled/100/ffffff/cloud.png";
-  if ([45,48].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/fog-day.png";
+  if ([45, 48].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/fog-day.png";
   if ([51,53,55,61,63,65,80,81,82].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/rain.png";
   if ([71,73,75,85,86].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/snow.png";
   if ([95,96,99].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/storm.png";
@@ -29,6 +31,7 @@ const FORECAST = "https://api.open-meteo.com/v1/forecast";
 export default function App() {
   const [query,setQuery] = useState("");
   const [data,setData] = useState(null);
+  const [forecast, setForecast] = useState(null); // 🔹 5-day forecast state
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
@@ -40,7 +43,7 @@ export default function App() {
   }
 
   async function fetchWeatherByCoords(lat,lon){
-    const res = await axios.get(`${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=auto&windspeed_unit=kmh`);
+    const res = await axios.get(`${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&windspeed_unit=kmh`);
     return res.data;
   }
 
@@ -66,6 +69,10 @@ export default function App() {
         description: describeWeather(cw.weathercode)
       };
       setData(payload);
+
+      // 🔹 5-day forecast
+      setForecast(weatherJson.daily); 
+
       const newRecent = [payload.place,...recent.filter(r=>r!==payload.place)].slice(0,6);
       setRecent(newRecent);
       localStorage.setItem("weather_recent_v1",JSON.stringify(newRecent));
@@ -102,6 +109,27 @@ export default function App() {
             <div>{data.place}</div>
             <div>{Math.round(data.temperature)}°C | {data.description}</div>
             <div>Humidity: {data.humidity ?? "-"}% | Wind: {data.windspeed} km/h</div>
+          </div>
+        )}
+
+        {/* 🔹 5-day forecast */}
+        {forecast && (
+          <div className="forecast flex gap-4 justify-center">
+            {forecast.time.map((day, index) => (
+              <div key={index} className="forecast-day p-4 bg-white/10 rounded-lg text-center w-28">
+                <div className="font-semibold mb-2">
+                  {new Date(day).toLocaleDateString("en-US",{weekday:"short"})}
+                </div>
+                <img
+                  src={iconForCode(forecast.weathercode[index])}
+                  alt="weather icon"
+                  className="mx-auto my-2 w-12 h-12"
+                />
+                <div className="text-sm">
+                  {Math.round(forecast.temperature_2m_max[index])}° / {Math.round(forecast.temperature_2m_min[index])}°
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
