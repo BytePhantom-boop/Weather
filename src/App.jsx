@@ -33,6 +33,7 @@ export default function App() {
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
+  const [unit, setUnit] = useState("C"); // Celsius by default
 
   async function geocode(city){
     const res = await axios.get(`${GEOCODE}?name=${encodeURIComponent(city)}&count=5&language=en&format=json`);
@@ -83,6 +84,10 @@ export default function App() {
     }finally{ setLoading(false); }
   }
 
+  function convertTemp(temp) {
+    return unit==="C" ? temp : temp*9/5 + 32;
+  }
+
   function handleRecentClick(placeName){ setQuery(placeName); handleSearch(placeName); }
   function clearRecent(){ setRecent([]); localStorage.removeItem("weather_recent_v1"); }
 
@@ -108,8 +113,15 @@ export default function App() {
           <div className="weather-card">
             <img src={iconForCode(data.weathercode)} alt={data.description} />
             <div>{data.place}</div>
-            <div>{Math.round(data.temperature)}°C | {data.description}</div>
+            <div>{Math.round(convertTemp(data.temperature))}°{unit} | {data.description}</div>
             <div>Wind: {data.windspeed} km/h</div>
+
+            {/* Unit toggle button */}
+            <div className="mt-2">
+              <button onClick={()=>setUnit(unit==="C"?"F":"C")} className="unit-btn">
+                Switch to °{unit==="C"?"F":"C"}
+              </button>
+            </div>
           </div>
         )}
 
@@ -119,8 +131,8 @@ export default function App() {
               <div key={f.date} className="forecast-card">
                 <div>{f.date}</div>
                 <img src={iconForCode(f.code)} alt="" />
-                <div>Max: {Math.round(f.max)}°C</div>
-                <div>Min: {Math.round(f.min)}°C</div>
+                <div>Max: {Math.round(convertTemp(f.max))}°{unit}</div>
+                <div>Min: {Math.round(convertTemp(f.min))}°{unit}</div>
               </div>
             ))}
           </div>
