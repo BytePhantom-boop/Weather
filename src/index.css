@@ -49,7 +49,6 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   width: 60%;
   max-width: 800px;
   text-align: center;
@@ -71,7 +70,6 @@ html, body {
   margin-bottom: 2rem;
   width: 100%;
 }
-
 .center-content input {
   flex: 1;
   padding: 1rem;
@@ -82,8 +80,6 @@ html, body {
   background-color: rgba(255,255,255,0.2);
   color: #fff;
 }
-
-/* Button */
 .center-content button {
   padding: 1rem 1.5rem;
   font-size: 1.2rem;
@@ -113,11 +109,8 @@ html, body {
   height: 120px;
   margin-bottom: 1rem;
 }
-.weather-card div {
-  margin: 0.5rem 0;
-}
 
-/* 5-day forecast */
+/* Forecast */
 .forecast {
   display: flex;
   justify-content: center;
@@ -138,12 +131,8 @@ html, body {
   height: 60px;
   margin: 0.5rem 0;
 }
-.forecast-day div {
-  margin: 0.2rem 0;
-  font-size: 0.9rem;
-}
 
-/* Recent searches buttons */
+/* Recent buttons */
 .center-content .recent-btn {
   background-color: rgba(0,0,0,0.5);
   padding: 0.5rem 1rem;
