@@ -7,7 +7,7 @@ html, body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
-/* Gradient sky: lighter top, darker bottom */
+/* Gradient sky */
 .bg-sky {
   width: 100vw;
   height: 100vh;
@@ -39,88 +39,12 @@ html, body {
   100% { transform: translateX(100vw); }
 }
 
-/* Rain / Snow */
-.rain, .snow {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.rain::after {
-  content: '';
-  position: absolute;
-  top: -10%;
-  width: 2px;
-  height: 15px;
-  background: rgba(255,255,255,0.7);
-  box-shadow: 50px 20px white,100px 80px white,150px 40px white,200px 60px white,250px 100px white,300px 30px white;
-  animation: rain-fall 1s linear infinite;
-}
-@keyframes rain-fall { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
-
-.snow::after {
-  content: '';
-  position: absolute;
-  top: -10%;
-  width: 6px;
-  height: 6px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 50%;
-  box-shadow: 50px 20px white,100px 80px white,150px 40px white,200px 60px white,250px 100px white,300px 30px white;
-  animation: snow-fall 10s linear infinite;
-}
-@keyframes snow-fall { 0% { transform: translateY(-100%) rotate(0deg); } 100% { transform: translateY(100vh) rotate(360deg); } }
-
 /* Center content */
 .center-content {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 60%;       /* desktop-friendly */
-  max-width: 800px;
-  text-align: center;
-}
-
-/* Title */
-.center-content h1 {
-  font-size: 5rem;   
-  font-weight: 800;
-  margin-bottom: 2rem;
-  color: #fff;
-  text-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-}
-
-/* Form / search */
-.center-content form {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  width: 100%;
-}
-
-.center-content input {
-  flex: 1;
-  padding: 1rem;
-  font-size: 1.5rem;   
-  border-radius: 10px;
-  border: none;
-  outline: none;
-  background-color: rgba(255,255,255,0.2);
-  color: #fff;
-}
-
-.center-content {
-  position: absolute; /* instead of relative */
+  position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* perfect centering */
+  transform: translate(-50%, -50%);
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -131,6 +55,33 @@ html, body {
   text-align: center;
 }
 
+/* Title */
+.center-content h1 {
+  font-size: 5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #fff;
+  text-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+}
+
+/* Form */
+.center-content form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.center-content input {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.5rem;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background-color: rgba(255,255,255,0.2);
+  color: #fff;
+}
 
 /* Weather card */
 .weather-card {
@@ -163,4 +114,22 @@ html, body {
 }
 .center-content .recent-btn:hover {
   background-color: rgba(59,130,246,0.7);
+}
+
+.forecast {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.forecast-day {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  width: 5rem;
+  transition: transform 0.2s;
+}
+.forecast-day:hover {
+  transform: scale(1.05);
 }
