@@ -1,24 +1,24 @@
 import { useState } from "react";
 import axios from "axios";
 
-// Weather descriptions
+// Map weather codes to description
 function describeWeather(code) {
   if (code === 0) return "Clear sky";
-  if ([1, 2].includes(code)) return "Partly cloudy";
+  if ([1,2].includes(code)) return "Partly cloudy";
   if (code === 3) return "Overcast";
-  if ([45, 48].includes(code)) return "Fog";
+  if ([45,48].includes(code)) return "Fog";
   if ([51,53,55,61,63,65,80,81,82].includes(code)) return "Rain";
   if ([71,73,75,85,86].includes(code)) return "Snow";
   if ([95,96,99].includes(code)) return "Thunderstorm";
   return "Unknown";
 }
 
-// Weather icons
+// Map weather codes to icons
 function iconForCode(code) {
   if (code === 0) return "https://img.icons8.com/ios-filled/100/ffffff/sun--v1.png";
-  if ([1, 2].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/partly-cloudy-day.png";
+  if ([1,2].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/partly-cloudy-day.png";
   if (code === 3) return "https://img.icons8.com/ios-filled/100/ffffff/cloud.png";
-  if ([45, 48].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/fog-day.png";
+  if ([45,48].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/fog-day.png";
   if ([51,53,55,61,63,65,80,81,82].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/rain.png";
   if ([71,73,75,85,86].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/snow.png";
   if ([95,96,99].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/storm.png";
@@ -31,7 +31,7 @@ const FORECAST = "https://api.open-meteo.com/v1/forecast";
 export default function App() {
   const [query,setQuery] = useState("");
   const [data,setData] = useState(null);
-  const [forecast, setForecast] = useState(null); // 🔹 5-day forecast state
+  const [forecast,setForecast] = useState([]);
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
@@ -53,6 +53,8 @@ export default function App() {
     try{
       const place = await geocode(city.trim());
       const weatherJson = await fetchWeatherByCoords(place.latitude, place.longitude);
+
+      // Current weather
       const cw = weatherJson.current_weather;
       let humidity=null;
       if(weatherJson.hourly?.time){
@@ -70,12 +72,21 @@ export default function App() {
       };
       setData(payload);
 
-      // 🔹 5-day forecast
-      setForecast(weatherJson.daily); 
-
+      // Recent searches
       const newRecent = [payload.place,...recent.filter(r=>r!==payload.place)].slice(0,6);
       setRecent(newRecent);
       localStorage.setItem("weather_recent_v1",JSON.stringify(newRecent));
+
+      // 5-day forecast
+      const daily = weatherJson.daily;
+      const next5Days = daily.time.map((date, idx) => ({
+        date,
+        max: daily.temperature_2m_max[idx],
+        min: daily.temperature_2m_min[idx],
+        code: daily.weathercode[idx],
+      }));
+      setForecast(next5Days);
+
       setQuery("");
     }catch(e){
       setError(e.message||"Failed to fetch weather");
@@ -112,22 +123,14 @@ export default function App() {
           </div>
         )}
 
-        {/* 🔹 5-day forecast */}
-        {forecast && (
-          <div className="forecast flex gap-4 justify-center">
-            {forecast.time.map((day, index) => (
-              <div key={index} className="forecast-day p-4 bg-white/10 rounded-lg text-center w-28">
-                <div className="font-semibold mb-2">
-                  {new Date(day).toLocaleDateString("en-US",{weekday:"short"})}
-                </div>
-                <img
-                  src={iconForCode(forecast.weathercode[index])}
-                  alt="weather icon"
-                  className="mx-auto my-2 w-12 h-12"
-                />
-                <div className="text-sm">
-                  {Math.round(forecast.temperature_2m_max[index])}° / {Math.round(forecast.temperature_2m_min[index])}°
-                </div>
+        {/* 5-day forecast */}
+        {forecast.length > 0 && (
+          <div className="forecast">
+            {forecast.map(day => (
+              <div key={day.date} className="forecast-day">
+                <div>{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
+                <img src={iconForCode(day.code)} alt={describeWeather(day.code)} />
+                <div>{Math.round(day.max)}° / {Math.round(day.min)}°</div>
               </div>
             ))}
           </div>
