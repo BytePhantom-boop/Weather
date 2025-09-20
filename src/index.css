@@ -150,3 +150,21 @@ html, body {
 .center-content .recent-btn:hover {
   background-color: rgba(59,130,246,0.7);
 }
+/* Options list */
+.options-container {
+  margin: 1rem 0;
+  text-align: center;
+}
+.option-btn {
+  background-color: rgba(0,0,0,0.6);
+  padding: 0.5rem 1rem;
+  margin: 0.2rem;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.option-btn:hover {
+  background-color: rgba(59,130,246,0.7);
+}
+
