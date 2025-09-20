@@ -33,6 +33,7 @@ export default function App() {
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
+  const [unit, setUnit] = useState("C"); // Celsius by default
 
   async function geocode(city){
     const res = await axios.get(`${GEOCODE}?name=${encodeURIComponent(city)}&count=5&language=en&format=json`);
@@ -51,6 +52,8 @@ export default function App() {
     try{
       const place = await geocode(city.trim());
       const weatherJson = await fetchWeatherByCoords(place.latitude, place.longitude);
+
+      // Current weather
       const cw = weatherJson.current_weather;
       const payload = {
         place: `${place.name}, ${place.country}`,
@@ -64,30 +67,33 @@ export default function App() {
 
       // 5-day forecast
       const daily = weatherJson.daily;
-      const forecastData = daily.time.map((t, i)=>({
-        date: t,
-        max: daily.temperature_2m_max[i],
-        min: daily.temperature_2m_min[i],
-        code: daily.weathercode[i]
+      const forecastData = daily.time.map((day, idx) => ({
+        date: day,
+        min: daily.temperature_2m_min[idx],
+        max: daily.temperature_2m_max[idx],
+        code: daily.weathercode[idx]
       }));
       setForecast(forecastData);
 
+      // Recent searches
       const newRecent = [payload.place,...recent.filter(r=>r!==payload.place)].slice(0,6);
       setRecent(newRecent);
       localStorage.setItem("weather_recent_v1",JSON.stringify(newRecent));
       setQuery("");
     }catch(e){
       setError(e.message||"Failed to fetch weather");
-      setData(null);
-      setForecast([]);
     }finally{ setLoading(false); }
   }
 
   function handleRecentClick(placeName){ setQuery(placeName); handleSearch(placeName); }
   function clearRecent(){ setRecent([]); localStorage.removeItem("weather_recent_v1"); }
 
+  function convertTemp(temp){
+    return unit === "C" ? temp : temp*9/5 + 32;
+  }
+
   return (
-    <div className="bg-sky w-screen min-h-screen relative flex flex-col items-center justify-start overflow-visible">
+    <div className="bg-sky w-screen h-screen relative flex items-center justify-center overflow-auto">
 
       {/* Clouds */}
       <div className="cloud" style={{ top:"10%", width:"200px", animationDuration:"60s"}}></div>
@@ -108,19 +114,22 @@ export default function App() {
           <div className="weather-card">
             <img src={iconForCode(data.weathercode)} alt={data.description} />
             <div>{data.place}</div>
-            <div>{Math.round(data.temperature)}°C | {data.description}</div>
+            <div>{Math.round(convertTemp(data.temperature))}°{unit} | {data.description}</div>
             <div>Wind: {data.windspeed} km/h</div>
+            <div className="mt-2">
+              <button onClick={()=>setUnit(unit==="C"?"F":"C")} className="unit-btn">Switch to °{unit==="C"?"F":"C"}</button>
+            </div>
           </div>
         )}
 
         {forecast.length>0 && (
-          <div className="forecast-container">
-            {forecast.map(f=>(
-              <div key={f.date} className="forecast-card">
+          <div className="forecast flex flex-wrap justify-center gap-4">
+            {forecast.map(f => (
+              <div key={f.date} className="weather-card small-card">
                 <div>{f.date}</div>
-                <img src={iconForCode(f.code)} alt="" />
-                <div>Max: {Math.round(f.max)}°C</div>
-                <div>Min: {Math.round(f.min)}°C</div>
+                <img src={iconForCode(f.code)} alt={describeWeather(f.code)} />
+                <div>Max: {Math.round(convertTemp(f.max))}°{unit}</div>
+                <div>Min: {Math.round(convertTemp(f.min))}°{unit}</div>
               </div>
             ))}
           </div>
