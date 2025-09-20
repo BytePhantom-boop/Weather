@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
 
-// Map weather codes to description
 function describeWeather(code) {
   if (code === 0) return "Clear sky";
   if ([1,2].includes(code)) return "Partly cloudy";
@@ -13,7 +12,6 @@ function describeWeather(code) {
   return "Unknown";
 }
 
-// Map weather codes to icons
 function iconForCode(code) {
   if (code === 0) return "https://img.icons8.com/ios-filled/100/ffffff/sun--v1.png";
   if ([1,2].includes(code)) return "https://img.icons8.com/ios-filled/100/ffffff/partly-cloudy-day.png";
