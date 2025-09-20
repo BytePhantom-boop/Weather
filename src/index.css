@@ -3,17 +3,19 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto; /* allow vertical scrolling */
 }
 
-/* Gradient sky: lighter top, darker bottom */
+/* Gradient sky */
 .bg-sky {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(to bottom, #87ceeb 30%, #1e3a8a 100%);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Clouds */
@@ -41,23 +43,21 @@ html, body {
 
 /* Center content */
 .center-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
+  position: relative; /* allow natural flow for scrolling */
+  margin: 2rem auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 60%;
   max-width: 800px;
   text-align: center;
+  z-index: 10;
 }
 
 /* Title */
 .center-content h1 {
-  font-size: 5rem;   
+  font-size: 5rem;
   font-weight: 800;
   margin-bottom: 2rem;
   color: #fff;
@@ -68,9 +68,10 @@ html, body {
 .center-content form {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   width: 100%;
 }
+
 .center-content input {
   flex: 1;
   padding: 1rem;
@@ -80,21 +81,6 @@ html, body {
   outline: none;
   background-color: rgba(255,255,255,0.2);
   color: #fff;
-}
-
-/* Unit toggle */
-.unit-toggle {
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background-color: rgba(59, 130, 246, 0.7);
-  color: white;
-  font-weight: bold;
-}
-.unit-toggle:hover {
-  background-color: rgba(59, 130, 246, 1);
 }
 
 /* Weather card */
@@ -107,26 +93,35 @@ html, body {
   text-align: center;
   margin-bottom: 1rem;
 }
-.weather-card img { width: 120px; height: 120px; margin-bottom: 1rem; }
-.weather-card div { margin: 0.5rem 0; }
-
-/* Forecast */
-.forecast-container {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+.weather-card img {
+  width: 120px;
+  height: 120px;
   margin-bottom: 1rem;
 }
+.weather-card div {
+  margin: 0.5rem 0;
+}
+
+/* Forecast cards */
+.forecast-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
 .forecast-card {
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.4);
   padding: 1rem;
   border-radius: 1rem;
   color: #fff;
   width: 120px;
   text-align: center;
 }
-.forecast-card img { width: 60px; height: 60px; margin: 0.5rem 0; }
+.forecast-card img {
+  width: 60px;
+  height: 60px;
+}
 
 /* Recent buttons */
 .center-content .recent-btn {
