@@ -133,3 +133,33 @@ html, body {
 .forecast-day:hover {
   transform: scale(1.05);
 }
+/* Forecast container */
+.forecast {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Each day card */
+.forecast-day {
+  background-color: rgba(0,0,0,0.5);
+  padding: 1rem;
+  border-radius: 0.8rem;
+  color: #fff;
+  text-align: center;
+  width: 100px;
+}
+
+.forecast-day img {
+  width: 60px;
+  height: 60px;
+  margin: 0.5rem 0;
+}
+
+.forecast-day div {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
