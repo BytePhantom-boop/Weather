@@ -29,15 +29,10 @@ const FORECAST = "https://api.open-meteo.com/v1/forecast";
 export default function App() {
   const [query,setQuery] = useState("");
   const [data,setData] = useState(null);
-  const [forecast,setForecast] = useState(null);
+  const [forecast,setForecast] = useState([]);
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
-  const [unit,setUnit] = useState("C"); // Celsius/Fahrenheit
-
-  function displayTemp(temp){
-    return unit === "C" ? `${Math.round(temp)}°C` : `${Math.round((temp*9/5)+32)}°F`;
-  }
 
   async function geocode(city){
     const res = await axios.get(`${GEOCODE}?name=${encodeURIComponent(city)}&count=5&language=en&format=json`);
@@ -46,7 +41,7 @@ export default function App() {
   }
 
   async function fetchWeatherByCoords(lat,lon){
-    const res = await axios.get(`${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&windspeed_unit=kmh`);
+    const res = await axios.get(`${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&windspeed_unit=kmh`);
     return res.data;
   }
 
@@ -57,32 +52,34 @@ export default function App() {
       const place = await geocode(city.trim());
       const weatherJson = await fetchWeatherByCoords(place.latitude, place.longitude);
       const cw = weatherJson.current_weather;
-      let humidity=null;
-      if(weatherJson.hourly?.time){
-        const idx = weatherJson.hourly.time.indexOf(cw.time);
-        humidity = idx!==-1? weatherJson.hourly.relativehumidity_2m[idx]:null;
-      }
-      setData({
+      const payload = {
         place: `${place.name}, ${place.country}`,
         temperature: cw.temperature,
         windspeed: cw.windspeed,
         weathercode: cw.weathercode,
         time: cw.time,
-        humidity,
         description: describeWeather(cw.weathercode)
-      });
-      setForecast({
-        max: weatherJson.daily.temperature_2m_max,
-        min: weatherJson.daily.temperature_2m_min,
-        codes: weatherJson.daily.weathercode,
-        dates: weatherJson.daily.time
-      });
-      const newRecent = [place.name,...recent.filter(r=>r!==place.name)].slice(0,6);
+      };
+      setData(payload);
+
+      // 5-day forecast
+      const daily = weatherJson.daily;
+      const forecastData = daily.time.map((t, i)=>({
+        date: t,
+        max: daily.temperature_2m_max[i],
+        min: daily.temperature_2m_min[i],
+        code: daily.weathercode[i]
+      }));
+      setForecast(forecastData);
+
+      const newRecent = [payload.place,...recent.filter(r=>r!==payload.place)].slice(0,6);
       setRecent(newRecent);
       localStorage.setItem("weather_recent_v1",JSON.stringify(newRecent));
       setQuery("");
     }catch(e){
       setError(e.message||"Failed to fetch weather");
+      setData(null);
+      setForecast([]);
     }finally{ setLoading(false); }
   }
 
@@ -90,7 +87,7 @@ export default function App() {
   function clearRecent(){ setRecent([]); localStorage.removeItem("weather_recent_v1"); }
 
   return (
-    <div className="bg-sky w-screen h-screen relative flex items-center justify-center overflow-hidden">
+    <div className="bg-sky w-screen min-h-screen relative flex flex-col items-center justify-start overflow-visible">
 
       {/* Clouds */}
       <div className="cloud" style={{ top:"10%", width:"200px", animationDuration:"60s"}}></div>
@@ -105,28 +102,25 @@ export default function App() {
           <button type="submit">{loading?"Searching...":"Search"}</button>
         </form>
 
-        <button className="unit-toggle" onClick={()=>setUnit(unit==="C"?"F":"C")}>
-          {unit==="C"?"Switch to °F":"Switch to °C"}
-        </button>
-
         {error && <div className="text-red-400 mb-4">{error}</div>}
 
         {data && (
           <div className="weather-card">
             <img src={iconForCode(data.weathercode)} alt={data.description} />
             <div>{data.place}</div>
-            <div>{displayTemp(data.temperature)} | {data.description}</div>
-            <div>Humidity: {data.humidity ?? "-"}% | Wind: {data.windspeed} km/h</div>
+            <div>{Math.round(data.temperature)}°C | {data.description}</div>
+            <div>Wind: {data.windspeed} km/h</div>
           </div>
         )}
 
-        {forecast && (
+        {forecast.length>0 && (
           <div className="forecast-container">
-            {forecast.dates.map((d,i)=>(
-              <div key={i} className="forecast-card">
-                <div>{d}</div>
-                <img src={iconForCode(forecast.codes[i])} alt={describeWeather(forecast.codes[i])} />
-                <div>{displayTemp(forecast.max[i])} / {displayTemp(forecast.min[i])}</div>
+            {forecast.map(f=>(
+              <div key={f.date} className="forecast-card">
+                <div>{f.date}</div>
+                <img src={iconForCode(f.code)} alt="" />
+                <div>Max: {Math.round(f.max)}°C</div>
+                <div>Min: {Math.round(f.min)}°C</div>
               </div>
             ))}
           </div>
