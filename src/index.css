@@ -83,6 +83,21 @@ html, body {
   color: #fff;
 }
 
+/* Button */
+.center-content button {
+  padding: 1rem 1.5rem;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: rgba(0,0,0,0.5);
+  color: #fff;
+  transition: background-color 0.2s;
+}
+.center-content button:hover {
+  background-color: rgba(59,130,246,0.7);
+}
+
 /* Weather card */
 .weather-card {
   background-color: rgba(0,0,0,0.5);
@@ -102,7 +117,33 @@ html, body {
   margin: 0.5rem 0;
 }
 
-/* Recent buttons */
+/* 5-day forecast */
+.forecast {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.forecast-day {
+  background-color: rgba(0,0,0,0.5);
+  padding: 1rem;
+  border-radius: 0.8rem;
+  color: #fff;
+  text-align: center;
+  width: 100px;
+}
+.forecast-day img {
+  width: 60px;
+  height: 60px;
+  margin: 0.5rem 0;
+}
+.forecast-day div {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+/* Recent searches buttons */
 .center-content .recent-btn {
   background-color: rgba(0,0,0,0.5);
   padding: 0.5rem 1rem;
@@ -115,51 +156,3 @@ html, body {
 .center-content .recent-btn:hover {
   background-color: rgba(59,130,246,0.7);
 }
-
-.forecast {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-.forecast-day {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  padding: 1rem;
-  border-radius: 0.75rem;
-  width: 5rem;
-  transition: transform 0.2s;
-}
-.forecast-day:hover {
-  transform: scale(1.05);
-}
-/* Forecast container */
-.forecast {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-/* Each day card */
-.forecast-day {
-  background-color: rgba(0,0,0,0.5);
-  padding: 1rem;
-  border-radius: 0.8rem;
-  color: #fff;
-  text-align: center;
-  width: 100px;
-}
-
-.forecast-day img {
-  width: 60px;
-  height: 60px;
-  margin: 0.5rem 0;
-}
-
-.forecast-day div {
-  margin: 0.2rem 0;
-  font-size: 0.9rem;
-}
-
