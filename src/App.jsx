@@ -33,59 +33,58 @@ export default function App() {
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
-  const [unit, setUnit] = useState("C"); // Celsius by default
+  const [options,setOptions] = useState([]); // NEW
 
   async function geocode(city){
     const res = await axios.get(`${GEOCODE}?name=${encodeURIComponent(city)}&count=5&language=en&format=json`);
     if(!res.data.results||res.data.results.length===0) throw new Error("City not found");
-    return res.data.results[0];
+    return res.data.results;
   }
 
-  async function fetchWeatherByCoords(lat,lon){
+  async function fetchWeatherByCoords(lat,lon,placeName){
     const res = await axios.get(`${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&windspeed_unit=kmh`);
-    return res.data;
+    const weatherJson = res.data;
+    const cw = weatherJson.current_weather;
+    const payload = {
+      place: placeName,
+      temperature: cw.temperature,
+      windspeed: cw.windspeed,
+      weathercode: cw.weathercode,
+      time: cw.time,
+      description: describeWeather(cw.weathercode)
+    };
+    setData(payload);
+
+    // Forecast
+    const daily = weatherJson.daily;
+    const forecastData = daily.time.map((t,i)=>({
+      date: t,
+      max: daily.temperature_2m_max[i],
+      min: daily.temperature_2m_min[i],
+      code: daily.weathercode[i]
+    }));
+    setForecast(forecastData);
+
+    // Update recent
+    const newRecent = [payload.place,...recent.filter(r=>r!==payload.place)].slice(0,6);
+    setRecent(newRecent);
+    localStorage.setItem("weather_recent_v1",JSON.stringify(newRecent));
+
+    setOptions([]); // clear options after selection
   }
 
   async function handleSearch(city){
     if(!city) return;
     setLoading(true); setError("");
     try{
-      const place = await geocode(city.trim());
-      const weatherJson = await fetchWeatherByCoords(place.latitude, place.longitude);
-      const cw = weatherJson.current_weather;
-      const payload = {
-        place: `${place.name}, ${place.country}`,
-        temperature: cw.temperature,
-        windspeed: cw.windspeed,
-        weathercode: cw.weathercode,
-        time: cw.time,
-        description: describeWeather(cw.weathercode)
-      };
-      setData(payload);
-
-      // 5-day forecast
-      const daily = weatherJson.daily;
-      const forecastData = daily.time.map((t, i)=>({
-        date: t,
-        max: daily.temperature_2m_max[i],
-        min: daily.temperature_2m_min[i],
-        code: daily.weathercode[i]
-      }));
-      setForecast(forecastData);
-
-      const newRecent = [payload.place,...recent.filter(r=>r!==payload.place)].slice(0,6);
-      setRecent(newRecent);
-      localStorage.setItem("weather_recent_v1",JSON.stringify(newRecent));
-      setQuery("");
-    }catch(e){
-      setError(e.message||"Failed to fetch weather");
+      const places = await geocode(city.trim());
+      setOptions(places); // show multiple options
       setData(null);
       setForecast([]);
+    }catch(e){
+      setError(e.message||"Failed to fetch weather");
+      setOptions([]);
     }finally{ setLoading(false); }
-  }
-
-  function convertTemp(temp) {
-    return unit==="C" ? temp : temp*9/5 + 32;
   }
 
   function handleRecentClick(placeName){ setQuery(placeName); handleSearch(placeName); }
@@ -93,12 +92,6 @@ export default function App() {
 
   return (
     <div className="bg-sky w-screen min-h-screen relative flex flex-col items-center justify-start overflow-visible">
-
-      {/* Clouds */}
-      <div className="cloud" style={{ top:"10%", width:"200px", animationDuration:"60s"}}></div>
-      <div className="cloud" style={{ top:"20%", width:"250px", animationDuration:"80s"}}></div>
-      <div className="cloud" style={{ top:"30%", width:"180px", animationDuration:"100s"}}></div>
-
       <div className="center-content">
         <h1>Weather App</h1>
 
@@ -109,19 +102,27 @@ export default function App() {
 
         {error && <div className="text-red-400 mb-4">{error}</div>}
 
+        {/* NEW: City options */}
+        {options.length>0 && (
+          <div className="options-container">
+            <p>Select a location:</p>
+            {options.map(o=>(
+              <button key={o.id}
+                onClick={()=>fetchWeatherByCoords(o.latitude,o.longitude,`${o.name}, ${o.country}`)}
+                className="option-btn"
+              >
+                {o.name}, {o.country}
+              </button>
+            ))}
+          </div>
+        )}
+
         {data && (
           <div className="weather-card">
             <img src={iconForCode(data.weathercode)} alt={data.description} />
             <div>{data.place}</div>
-            <div>{Math.round(convertTemp(data.temperature))}°{unit} | {data.description}</div>
+            <div>{Math.round(data.temperature)}°C | {data.description}</div>
             <div>Wind: {data.windspeed} km/h</div>
-
-            {/* Unit toggle button */}
-            <div className="mt-2">
-              <button onClick={()=>setUnit(unit==="C"?"F":"C")} className="unit-btn">
-                Switch to °{unit==="C"?"F":"C"}
-              </button>
-            </div>
           </div>
         )}
 
@@ -131,8 +132,8 @@ export default function App() {
               <div key={f.date} className="forecast-card">
                 <div>{f.date}</div>
                 <img src={iconForCode(f.code)} alt="" />
-                <div>Max: {Math.round(convertTemp(f.max))}°{unit}</div>
-                <div>Min: {Math.round(convertTemp(f.min))}°{unit}</div>
+                <div>Max: {Math.round(f.max)}°C</div>
+                <div>Min: {Math.round(f.min)}°C</div>
               </div>
             ))}
           </div>
