@@ -33,7 +33,14 @@ export default function App() {
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
   const [recent,setRecent] = useState(JSON.parse(localStorage.getItem("weather_recent_v1")||"[]"));
-  const [options,setOptions] = useState([]); // NEW
+  const [options,setOptions] = useState([]); 
+  const [unit,setUnit] = useState("C"); // NEW (toggle state)
+
+  // Convert temperature based on unit
+  function formatTemp(temp) {
+    if (unit === "C") return `${Math.round(temp)}°C`;
+    return `${Math.round((temp * 9) / 5 + 32)}°F`;
+  }
 
   async function geocode(city){
     const res = await axios.get(`${GEOCODE}?name=${encodeURIComponent(city)}&count=5&language=en&format=json`);
@@ -100,9 +107,14 @@ export default function App() {
           <button type="submit">{loading?"Searching...":"Search"}</button>
         </form>
 
+        {/* Toggle button */}
+        <button onClick={()=>setUnit(unit==="C"?"F":"C")} className="toggle-btn">
+          Show in °{unit==="C"?"F":"C"}
+        </button>
+
         {error && <div className="text-red-400 mb-4">{error}</div>}
 
-        {/* NEW: City options */}
+        {/* City options */}
         {options.length>0 && (
           <div className="options-container">
             <p>Select a location:</p>
@@ -121,7 +133,7 @@ export default function App() {
           <div className="weather-card">
             <img src={iconForCode(data.weathercode)} alt={data.description} />
             <div>{data.place}</div>
-            <div>{Math.round(data.temperature)}°C | {data.description}</div>
+            <div>{formatTemp(data.temperature)} | {data.description}</div>
             <div>Wind: {data.windspeed} km/h</div>
           </div>
         )}
@@ -132,8 +144,8 @@ export default function App() {
               <div key={f.date} className="forecast-card">
                 <div>{f.date}</div>
                 <img src={iconForCode(f.code)} alt="" />
-                <div>Max: {Math.round(f.max)}°C</div>
-                <div>Min: {Math.round(f.min)}°C</div>
+                <div>Max: {formatTemp(f.max)}</div>
+                <div>Min: {formatTemp(f.min)}</div>
               </div>
             ))}
           </div>
