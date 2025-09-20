@@ -167,4 +167,17 @@ html, body {
 .option-btn:hover {
   background-color: rgba(59,130,246,0.7);
 }
+/* Toggle button */
+.toggle-btn {
+  background-color: rgba(0,0,0,0.6);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.toggle-btn:hover {
+  background-color: rgba(59,130,246,0.7);
+}
 
