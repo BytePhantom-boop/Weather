@@ -6,7 +6,7 @@ html, body {
   min-height: 100%;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
-  overflow-y: auto; /* allow vertical scrolling */
+  overflow-y: auto;
 }
 
 /* Gradient sky */
@@ -43,7 +43,7 @@ html, body {
 
 /* Center content */
 .center-content {
-  position: relative; /* allow natural flow for scrolling */
+  position: relative;
   margin: 2rem auto;
   display: flex;
   flex-direction: column;
@@ -100,6 +100,20 @@ html, body {
 }
 .weather-card div {
   margin: 0.5rem 0;
+}
+
+/* Unit toggle button */
+.unit-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 5px;
+  background-color: rgba(255,255,255,0.2);
+  color: #fff;
+  cursor: pointer;
+  border: none;
+  margin-top: 0.5rem;
+}
+.unit-btn:hover {
+  background-color: rgba(255,255,255,0.4);
 }
 
 /* Forecast cards */
