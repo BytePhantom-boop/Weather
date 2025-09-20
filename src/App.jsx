@@ -41,7 +41,9 @@ export default function App() {
   }
 
   async function fetchWeatherByCoords(lat, lon) {
-    const res = await axios.get(`${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&windspeed_unit=kmh`);
+    const res = await axios.get(
+      `${FORECAST}?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&windspeed_unit=kmh`
+    );
     return res.data;
   }
 
@@ -54,30 +56,34 @@ export default function App() {
       const weatherJson = await fetchWeatherByCoords(place.latitude, place.longitude);
       const cw = weatherJson.current_weather;
 
-      const payload = {
+      setData({
         place: `${place.name}, ${place.country}`,
         temperature: cw.temperature,
         windspeed: cw.windspeed,
         weathercode: cw.weathercode,
-        time: cw.time,
-        description: describeWeather(cw.weathercode)
-      };
-      setData(payload);
+        description: describeWeather(cw.weathercode),
+      });
 
-      const next5Days = weatherJson.daily.time.map((date, idx) => ({
-        date,
-        max: weatherJson.daily.temperature_2m_max[idx],
-        min: weatherJson.daily.temperature_2m_min[idx],
-        code: weatherJson.daily.weathercode[idx]
-      }));
-      setForecast(next5Days);
+      // 5-day forecast
+      if (weatherJson.daily) {
+        const next5Days = weatherJson.daily.time.map((date, idx) => ({
+          date,
+          max: weatherJson.daily.temperature_2m_max[idx],
+          min: weatherJson.daily.temperature_2m_min[idx],
+          code: weatherJson.daily.weathercode[idx],
+        }));
+        setForecast(next5Days);
+      } else {
+        setForecast([]);
+      }
 
-      const newRecent = [payload.place, ...recent.filter(r => r !== payload.place)].slice(0, 6);
+      const newRecent = [place.name, ...recent.filter(r => r !== place.name)].slice(0, 6);
       setRecent(newRecent);
       localStorage.setItem("weather_recent_v1", JSON.stringify(newRecent));
       setQuery("");
     } catch (e) {
       setError(e.message || "Failed to fetch weather");
+      setForecast([]);
     } finally {
       setLoading(false);
     }
@@ -94,7 +100,6 @@ export default function App() {
 
   return (
     <div className="bg-sky w-screen h-screen relative flex items-center justify-center overflow-hidden">
-
       {/* Clouds */}
       <div className="cloud" style={{ top: "10%", width: "200px", animationDuration: "60s" }}></div>
       <div className="cloud" style={{ top: "20%", width: "250px", animationDuration: "80s" }}></div>
